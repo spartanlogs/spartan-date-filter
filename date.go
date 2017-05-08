@@ -55,7 +55,9 @@ func newDateFilter(options utils.InterfaceMap) (filters.Filter, error) {
 }
 
 func (f *DateFilter) setConfig(options utils.InterfaceMap) error {
-	if err := config.VerifySettings(options, dateConfigSchema); err != nil {
+	var err error
+	options, err = config.VerifySettings(options, dateConfigSchema)
+	if err != nil {
 		return err
 	}
 
