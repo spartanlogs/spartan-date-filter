@@ -16,7 +16,7 @@ func init() {
 type dateConfig struct {
 	field    string
 	patterns []string
-	timezone string
+	timezone *time.Location
 }
 
 var dateConfigSchema = []config.Setting{
@@ -62,8 +62,9 @@ func (f *DateFilter) setConfig(options utils.InterfaceMap) error {
 	}
 
 	f.config.field = options.Get("field").(string)
-	f.config.timezone = options.Get("timezone").(string)
 	f.config.patterns = options.Get("patterns").([]string)
+
+	f.config.timezone, _ = time.LoadLocation(options.Get("timezone").(string))
 
 	return nil
 }
@@ -81,11 +82,9 @@ func (f *DateFilter) Filter(batch []*event.Event, matchedFunc filters.MatchFunc)
 			continue
 		}
 
-		loc, _ := time.LoadLocation(f.config.timezone)
-
 		matched := false
 		for _, p := range f.config.patterns {
-			newTime, err := time.ParseInLocation(p, fieldStr, loc)
+			newTime, err := time.ParseInLocation(p, fieldStr, f.config.timezone)
 			if err != nil {
 				continue
 			}
